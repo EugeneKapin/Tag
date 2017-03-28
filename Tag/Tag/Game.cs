@@ -9,9 +9,10 @@ namespace Tag
 {
     class Game
     {
-        private int side, a = 0, b = 0, Numberone = 0, Numbertwo = 0; 
+        public int a = 0, b = 0, Numberone = 0, Numbertwo = 0;
+        public int side { get; set; }
         public int[,] Numbers;        
-        private Dictionary<int,int> dictionary=new Dictionary<int,int>();
+        protected Dictionary <int, Tuple<int, int>> dictionary=new Dictionary<int,Tuple<int, int>>();
 
         public Game(params int[] meaning)
         {
@@ -33,7 +34,8 @@ namespace Tag
                         a = i;
                         b = j;
                         Numbers[i, j] = meaning[count];
-                        dictionary.Add(0, count);
+                        var numberof = Tuple.Create(i, j);
+                        dictionary.Add(Numbers[i, j], numberof);
                         count++;
                         existVoid = true;
 
@@ -41,7 +43,8 @@ namespace Tag
                     else
                     {
                         Numbers[i, j] = meaning[count];
-                        dictionary.Add(Numbers[i, j], count);
+                        var numberof = Tuple.Create(i, j);
+                        dictionary.Add(Numbers[i, j], numberof);
                         count++;
                     }
                 }
@@ -62,10 +65,11 @@ namespace Tag
             }
         }
 
-        public int GetLocation(int value)
+        public Tuple<int, int> GetLocation(int value)
         {            
             if ((value < Math.Pow(side, 2))&&(value>=0))
-            {                
+            {
+                var Cortege = Tuple.Create(dictionary[value].Item1, dictionary[value].Item2);
                 return dictionary[value];
             }
             else throw new ArgumentException("This number " + value + " could not find");   
@@ -93,7 +97,7 @@ namespace Tag
         }
 
 
-        public void Shift(int value)
+        public virtual void Shift(int value)
         {
             bool existValue = false;
             for (int i = 0; i < side; i++)
@@ -112,26 +116,19 @@ namespace Tag
             if (existValue)
             {
                 if (Math.Abs(Numberone - a) + Math.Abs(Numbertwo - b) == 1)
-                {                    
+                {
                     Numbers[a, b] = Numbers[Numberone, Numbertwo];
                     dictionary.Remove(0);
                     dictionary.Remove(value);
-                    dictionary.Add(value, a * side + b);                    
-                    dictionary.Add(0, Numberone * side + Numbertwo);  
+                    var coorVoid = Tuple.Create(a, b);
+                    var coorValue = Tuple.Create(Numberone, Numbertwo);
+                    dictionary.Add(value, coorVoid);
+                    dictionary.Add(0, coorValue);
                     a = Numberone;
                     b = Numbertwo;
-                    Numbers[a, b] = 0;   
-                }
-                else
-                {
-                    throw new ArgumentException("This number can not be interchanged with zero");
+                    Numbers[a, b] = 0;
                 }
             }
-            else
-            {            
-                throw new ArgumentException("This number " + value + " could not find");     
-            }
-            
         }
 
         public static Game FromCSV(string file)
